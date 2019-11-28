@@ -13,7 +13,7 @@ def home():
 
     # Get Client data from Meraki API
     g = getGroup()
-    c = getClients(g[0]['id'])
+    c = getClients(g[1]['id'])
     c = c.loc[:,["description","mac","serial"]]
     c.columns = ["client","gatewayMac","gatewaySN"]
 
@@ -64,3 +64,6 @@ def group():
     r = getGroup()
     html = "The Group Name is: " + str(r[0]['name']) + "<br>" + "The Group ID is: " + str(r[0]['id'])
     return html
+
+if __name__ == '__main__':
+    app.run( host='masterpi.local', port=5000)

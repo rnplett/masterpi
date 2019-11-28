@@ -13,7 +13,6 @@ def getGroup():
        'x-cisco-meraki-api-key': MERAKI_KEY
        }
     payload = ""
-    response = requests.request("GET", url, data=payload, headers=headers)
 
     r = json.loads(response.text)
 
@@ -34,10 +33,8 @@ def getDevices(oid):
     return r
 
 def getClients(oid):
-
     devices = getDevices(oid)
     clients = DataFrame()
-
     for i in devices:
         i = dict(i)
         url = "https://dashboard.meraki.com/api/v0/devices/" + str(i['serial']) + "/clients?timespan=900"
@@ -51,6 +48,7 @@ def getClients(oid):
         rdf = DataFrame(r)
         for k,v in i.items():
             rdf[k] = v
-        clients = clients.append(rdf)
-        
+            print(v)
+        clients = clients.append(rdf)        
+        print(" ")
     return clients
