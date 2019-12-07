@@ -13,7 +13,7 @@ def home():
 
     # Get Client data from Meraki API
     g = getGroup()
-    c = getClients(g[1]['id'])
+    c = getClients(g[0]['id'])
     c = c.loc[:,["description","mac","serial"]]
     c.columns = ["client","gatewayMac","gatewaySN"]
 
@@ -63,6 +63,21 @@ def who():
 def group():
     r = getGroup()
     html = "The Group Name is: " + str(r[0]['name']) + "<br>" + "The Group ID is: " + str(r[0]['id'])
+    return html
+
+@app.route('/device')
+def device():
+    g = getGroup()
+
+    c = getClients(g[0]['id'])
+    c = c.loc[:,["description","mac","serial"]]
+    c.columns = ["client","gatewayMac","gatewaySN"]
+    c = DataFrame(c.client.unique())
+
+    html = "The Group Name is: " + str(g[0]['name']) + "<br>" + "The Group ID is: " + str(g[0]['id'])
+    html = html + "<br>The devices are:<br>"
+    html = html + str(c.to_html())
+
     return html
 
 if __name__ == '__main__':

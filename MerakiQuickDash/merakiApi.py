@@ -14,6 +14,8 @@ def getGroup():
        }
     payload = ""
 
+    response = requests.request("GET", url, data=payload, headers=headers)
+
     r = json.loads(response.text)
 
     return r
@@ -29,7 +31,6 @@ def getDevices(oid):
     response = requests.request("GET", url, data=payload, headers=headers)
 
     r = json.loads(response.text)
-
     return r
 
 def getClients(oid):
@@ -44,11 +45,12 @@ def getClients(oid):
             }
         payload = ""
         response = requests.request("GET", url, data=payload, headers=headers)
-        r = json.loads(response.text)
-        rdf = DataFrame(r)
-        for k,v in i.items():
-            rdf[k] = v
-            print(v)
-        clients = clients.append(rdf)        
-        print(" ")
+        try:
+            r = json.loads(response.text)
+            rdf = DataFrame(r)
+            for k,v in i.items():
+                rdf[k] = v
+            clients = clients.append(rdf, sort=True)
+        except:
+            print("found a problem in \n{}\n".format(i))
     return clients
