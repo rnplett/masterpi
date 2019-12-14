@@ -6,13 +6,13 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 
 # If modifying these scopes, delete the file token.pickle.
-SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
+SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
 # The ID and range of a sample spreadsheet.
-SAMPLE_SPREADSHEET_ID = '10c9pUpfDHPapF7QcJkVxR_WyQ0gfuK5tDB6kIUPRjG4'
-SAMPLE_RANGE_NAME = 'Sheet113!A1:B2'
+PLETTHOME_SHEET_ID = '1MZ8PpknP19lBbdlDyEmMTiS6a6Vdd9OAd69qQTasEXk'
+SAMPLE_RANGE = 'Settings!A3:E7'
 
-def main():
+def get_creds():
     """Shows basic usage of the Sheets API.
     Prints values from a sample spreadsheet.
     """
@@ -34,13 +34,13 @@ def main():
         # Save the credentials for the next run
         with open('token.pickle', 'wb') as token:
             pickle.dump(creds, token)
+    return creds
 
-    service = build('sheets', 'v4', credentials=creds)
+def read_sheet(service, sheet_id, range_str):
 
-    # Call the Sheets API
     sheet = service.spreadsheets()
-    result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
-                                range=SAMPLE_RANGE_NAME).execute()
+    result = sheet.values().get(spreadsheetId=sheet_id,
+                                range=range_str).execute()
     values = result.get('values', [])
 
     if not values:
@@ -48,8 +48,43 @@ def main():
     else:
         print('Name, Major:')
         for row in values:
-            # Print columns A and E, which correspond to indices 0 and 4.
-            print('%s, %s' % (row[0], row[4]))
+            # Print columns A and B, which correspond to indices 0 and 4.
+            print('%s, %s' % (row[0], row[1]))
+    return values
+
+def write_sheet(service, sheet_id, range_str, data):
+
+    values = data
+    body = {
+        'values': values
+        }
+    result = service.spreadsheets().values().update(
+        spreadsheetId=sheet_id, range=range_str,
+        valueInputOption='USER_ENTERED', body=body).execute()
+
+    print('{0} cells updated.'.format(result.get('updatedCells')))
+
+def format_sheet():
+
+
 
 if __name__ == '__main__':
-    main()
+
+    creds = get_creds()
+    service = build('sheets', 'v4', credentials=creds)
+
+    # Read Data from the Pletthome spreadsheet
+    data = read_sheet(service, PLETTHOME_SHEET_ID, SAMPLE_RANGE)
+    print(" ")
+    print(data)
+
+    # Write data to the Pletthome spreadsheet
+    data = [
+        [0,1,2,3,4],
+        [10,11,12,13,14]
+        ]
+
+    write_sheet(service, PLETTHOME_SHEET_ID, SAMPLE_RANGE, data)
+
+    # Format the Pletthome spreadsheet
+    #
