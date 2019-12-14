@@ -1,55 +1,65 @@
-from __future__ import print_function
-import pickle
-import os.path
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
+from inputs.creds import *
+import json
+import requests
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 
 # The ID and range of a sample spreadsheet.
-SAMPLE_SPREADSHEET_ID = '10c9pUpfDHPapF7QcJkVxR_WyQ0gfuK5tDB6kIUPRjG4'
-SAMPLE_RANGE_NAME = 'Sheet113!A1:B2'
+SETTINGS_RANGE = 'Settings!A1:B2'
 
-def main():
+def readSettings():
     """Shows basic usage of the Sheets API.
     Prints values from a sample spreadsheet.
     """
-    creds = None
-    # The file token.pickle stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first
-    # time.
-    if os.path.exists('token.pickle'):
-        with open('token.pickle', 'rb') as token:
-            creds = pickle.load(token)
-    # If there are no (valid) credentials available, let the user log in.
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
-            creds = flow.run_local_server(port=0)
-        # Save the credentials for the next run
-        with open('token.pickle', 'wb') as token:
-            pickle.dump(creds, token)
 
-    service = build('sheets', 'v4', credentials=creds)
+    url = "https://sheets.googleapis.com/v4/spreadsheets/" + \
+        SPREADSHEET_ID + "/values/" + SETTINGS_RANGE    
+    headers = {
+       'cache-control': "no-cache"
+       }       
+    params = {
+        'key': GoogleAPIkey
+    }       
+    payload = ""
+    response = requests.request("GET", url, data=payload, headers=headers, params=params)
+    settings = json.loads(response.text)
+    with open('data/googleSettings.json','w') as outfile:
+        json.dump(settings, outfile)
+    return settings
+    
+def writeSettings(settings):
 
-    # Call the Sheets API
-    sheet = service.spreadsheets()
-    result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
-                                range=SAMPLE_RANGE_NAME).execute()
-    values = result.get('values', [])
-
-    if not values:
-        print('No data found.')
-    else:
-        print('Name, Major:')
-        for row in values:
-            # Print columns A and E, which correspond to indices 0 and 4.
-            print('%s, %s' % (row[0], row[4]))
+    url = "https://sheets.googleapis.com/v4/spreadsheets/" + \
+        SPREADSHEET_ID + "/values/" + SETTINGS_RANGE    
+    headers = {
+       'cache-control': "no-cache",
+       'Content-Type': 'application/json'
+       }       
+    params = {
+        'valueInputOption':'USER_ENTERED',
+        'key': GoogleAPIkey,
+    }       
+    payload = settings
+    response = requests.request("PUT", url, data=payload, headers=headers, params=params)
+    message = json.loads(response.text)
+    return message
 
 if __name__ == '__main__':
-    main()
+    s = readSettings()
+    s = s['values']
+    print(s)
+    
+    with open('data/googleSettings.json','r') as infile:
+        f = json.load(infile)
+    print("File data:")
+    print(f)
+    print('')
+    
+    f['values'][0][0] = 3
+    print(f)
+    print('')
+    
+    m = writeSettings(json.dumps(f))
+    print(m)
+    
