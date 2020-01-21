@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block container %}
+  <div class="top-pad">
+    {% for id, person in people.items() %}
+      <div class="well">
+          <small> {{ person['FullName'] }} - has {{ person['Device_Count'] }}</small>
+        <br>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}
